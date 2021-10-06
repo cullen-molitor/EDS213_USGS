@@ -1,0 +1,35 @@
+---
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r, include=FALSE}
+library(dataRetrieval)
+library(tidyverse)
+```
+
+```{r}
+siteNumber <- "11118500"
+site_info <- readNWISsite(siteNumber)
+parameterCd <- "00060"  # Discharge
+startDate <- "2020-01-01"  
+endDate <- "2021-10-06" 
+
+# comment(site_info)
+
+discharge <- readNWISdv(siteNumbers	= siteNumber, 
+                        parameterCd = parameterCd, 
+                        startDate = startDate, 
+                        endDate = endDate) %>% 
+  renameNWISColumns()
+```
+
+```{r}
+ggplot(data = discharge, aes(x = Date, y = Flow)) +
+  geom_line() +
+  theme_classic()
+```
+
