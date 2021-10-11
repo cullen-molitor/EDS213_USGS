@@ -1,9 +1,13 @@
 ---
-output: html_document
+title: "Assignment 2.1"
+output: 
+  html_document:
+    code_folding: hide
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(message = FALSE)
 ```
 
 ```{r, include=FALSE}
@@ -11,25 +15,29 @@ library(dataRetrieval)
 library(tidyverse)
 ```
 
-```{r}
-siteNumber <- "11118500"
-site_info <- readNWISsite(siteNumber)
-parameterCd <- "00060"  # Discharge
-startDate <- "2020-01-01"  
-endDate <- "2021-10-06" 
+The best way to add sites to the query is to  feed the function `readNWISdata()` a vector of site codes.
 
-# comment(site_info)
-
-discharge <- readNWISdv(siteNumbers	= siteNumber, 
-                        parameterCd = parameterCd, 
-                        startDate = startDate, 
-                        endDate = endDate) %>% 
-  renameNWISColumns()
+```{r }
+discharge <- readNWISdata(
+  sites = c("11118500", "11113500"), 
+  service = "iv",
+  parameterCd = "00060",
+  startDate = "2021-10-01T00:00Z",
+  endDate = "2021-10-10T12:00Z") %>% 
+  renameNWISColumns() %>%
+  mutate(
+    site_name = 
+      case_when(
+        site_no == "11118500" ~ "Ventura",
+        site_no == "11113500" ~ "Santa Paula"))
 ```
 
+The Santa Paula Creek peaked around 2021-10-05 10:45:00 following the rain on 2021-10-04, reaching a maximum value of 0.7 (cf/sec). Interestingly the creek has since peaked again, maxing out at 1.02 (cf/sec). The Ventura River does not look as interesting.  
+
 ```{r}
-ggplot(data = discharge, aes(x = Date, y = Flow)) +
+ggplot(data = discharge, aes(x = dateTime, y = Flow_Inst, color = site_name)) +
   geom_line() +
+  geom_smooth() +
+  labs(color = "Sites", x = "Date", y = "Flow (cf/sec)") +
   theme_classic()
 ```
-
